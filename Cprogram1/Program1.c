@@ -2,13 +2,20 @@
  * Program1.c
  *
  *  Created on: Feb 10, 2023
+ *  Last Revised Feb 11, 2023
  *      Author: c950c102
  */
 #include <stdio.h>
 
-#include <math.h>
+#include <stdlib.h>
 
 char* monthName;
+
+char userFile[100]="";
+
+FILE *textfile;
+
+char line[12];
 
 int sortedMonth[12];
 
@@ -17,6 +24,8 @@ float sales[12];
 float temp[12];
 
 int num;
+
+int num2;
 
 int maxMonth;
 
@@ -30,16 +39,16 @@ float sum;
 
 float calcAverage(int numStart, int numEnd){
 
+	sum = 0;
+
 	for (int i=numStart; i <= numEnd; i++){
 
 		sum = sum + sales[i];
-
 	}
 
-	sum = sum / 12;
+	sum = sum / (numEnd - numStart + 1);
 
 	return sum;
-
 }
 
 char* declareMonth(int num){
@@ -91,14 +100,14 @@ float maxValue(){
 		num++;
 	}
 
-	return max;
+	return maxMonth;
 }
 
 float minValue(){
 
 	num = 1;
 
-	minMonth = num;
+	minMonth = 0;
 
 	min = sales[0];
 
@@ -114,14 +123,12 @@ float minValue(){
 		num++;
 	}
 
-	return min;
+	return minMonth;
 }
 
 int sortMonths(){
 
-
-
-	int num2;
+	int currmax;
 
 	num = 0;
 
@@ -129,7 +136,7 @@ int sortMonths(){
 
 		num2 = 1;
 
-		maxMonth = 0;
+		currmax = 0;
 
 		max = temp[0];
 
@@ -139,64 +146,121 @@ int sortMonths(){
 
 				max = temp[num2];
 
-				maxMonth = num2;
+				currmax = num2;
 			}
 
 			num2++;
-
 		}
 
-		temp[maxMonth] = -1;
+		temp[currmax] = -1;
 
-		sortedMonth[num] = maxMonth;
+		sortedMonth[num] = currmax;
 
 		num++;
-
 	}
-
 	return 0;
 }
 
 int main(){
 
-printf("%s", "Enter your sales for each month (spaced out and in order):\n");
+	int userInput;
 
-scanf("%f %f %f %f %f %f %f %f %f %f %f %f", &sales[0], &sales[1], &sales[2], &sales[3], &sales[4], &sales[5], &sales[6], &sales[7], &sales[8], &sales[9], &sales[10], &sales[11]);
+	printf("%s","Would you like to read a file(1) or input manually(2)?\n");
 
-for (int i = 0; i <= 11; i++){
+	scanf("%d", &userInput);
 
-	temp[i] = sales[i];
+	if (userInput == 1){
 
-}
-printf("%s", "\nMonthly Sales report for 2022\n\n");
+		printf("%s","Enter your input file(Make sure you add the extension):\n");
 
-printf("%s","Month   \tSales\n\n");
+		scanf("%s", &userFile);
 
-num = 0;
+		textfile = fopen(userFile, "r");
 
-while (num<=11){
+		num = 0;
 
-	monthName = declareMonth(num);
+		while (fgets(line, 12, textfile)){
 
-	printf("%s     \t$%f\n", monthName, sales[num]);
+			sales[num] = atof(line);
 
-	num++;
+			num++;
+		}
 
-}
+		fclose(textfile);
 
-printf("%f \n", calcAverage(0, 11));
+	}else{
 
-printf("%f \n", maxValue());
+		printf("%s", "Enter your sales for each month (spaced out and in order):\n");
 
-printf("%f \n", minValue());
+		scanf("%f %f %f %f %f %f %f %f %f %f %f %f", &sales[0], &sales[1], &sales[2], &sales[3], &sales[4], &sales[5], &sales[6], &sales[7], &sales[8], &sales[9], &sales[10], &sales[11]);
+	}
 
-sortMonths();
+	for (int i = 0; i <= 11; i++){
 
-for(int i = 0; i <= 11; i++){
+		temp[i] = sales[i];
+	}
 
-	printf("%d \n", sortedMonth[i]);
-}
+	printf("%s", "\nMonthly Sales report for 2022:\n\n");
 
-return 0;
+	printf("%s","Month   \tSales\n\n");
 
+	num = 0;
+
+	while (num<=11){
+
+		monthName = declareMonth(num);
+
+		printf("%s     \t$%f\n", monthName, sales[num]);
+
+		num++;
+	}
+
+	maxMonth = maxValue();
+
+	minMonth = minValue();
+
+	printf("%s", "\nSales Summary:\n\n");
+
+	printf("%s\t$%f\t(%s)\n", "Minimum Sales:", sales[minMonth], declareMonth(minMonth));
+
+	printf("%s\t$%f\t(%s)\n","Maximum Sales:", sales[maxMonth], declareMonth(maxMonth));
+
+	printf("%s\t$%f\n\n","Average Sales:", calcAverage(0, 11));
+
+	printf("%s\n\n","Six Month Average Report:");
+
+	printf("%s\t\t$%f\n","January\t - June",calcAverage(0, 5));
+
+	printf("%s\t\t$%f\n","February - July",calcAverage(1, 6));
+
+	printf("%s\t$%f\n","March\t - August",calcAverage(2, 7));
+
+	printf("%s\t$%f\n","April\t - September",calcAverage(3, 8));
+
+	printf("%s\t$%f\n","May\t - October",calcAverage(4, 9));
+
+	printf("%s\t$%f\n","June\t - November",calcAverage(5, 10));
+
+	printf("%s\t$%f\n\n","July\t - December",calcAverage(6, 11));
+
+	sortMonths();
+
+	printf("%s", "Sales Report(Highest to Lowest):\n\n");
+
+	printf("%s","Month   \tSales\n\n");
+
+	num = 0;
+
+	while (num<=11) {
+
+		num2 = sortedMonth[num];
+
+		monthName = declareMonth(num2);
+
+		printf("%s     \t$%f\n", monthName, sales[num2]);
+
+		num++;
+	}
+
+	return 0;
 }
